@@ -21,7 +21,7 @@ def create_spiral(num_points=500, noise_level=0, color='blue'):
     plt.xlim(-1.5, 1.5)
     plt.ylim(-1.5, 1.5)
     
-    plt.title('Interactiver Spiral Plot')
+    plt.title('Interaktiver Spiral Plot')
     plt.xlabel('X')
     plt.ylabel('Y')
     plt.gca().set_aspect('equal', adjustable='box')
@@ -29,8 +29,8 @@ def create_spiral(num_points=500, noise_level=0, color='blue'):
     plt.show()
 
 # Input Noise und Farbe
-noise_slider = widgets.FloatSlider(value=0, min=0, max=0.15, step=0.01, description='Noise')
-color_picker = widgets.ColorPicker(value='blue', description='Color')
+noise_slider = widgets.FloatSlider(value=0, min=0, max=0.15, step=0.01, description='Rauschen')
+color_picker = widgets.ColorPicker(value='blue', description='Farbe')
 
 def update_plot(noise_level, color):
     create_spiral(noise_level=noise_level, color=color)
