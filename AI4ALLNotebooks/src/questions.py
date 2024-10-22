@@ -53,7 +53,7 @@ def create_multipleChoice_widget(description, options, correct_answer,last=0):
             print(s)
         return
     
-    check = widgets.Button(description="Ã¼berprÃ¼fen")
+    check = widgets.Button(description="Überprüfen")
     check.on_click(check_selection)
     
     
@@ -99,7 +99,7 @@ def create_multipleChoice_widget_new(descriptionText, descriptionCode, options, 
             print(s)
         return
     
-    check = widgets.Button(description="Ã¼berprÃ¼fen")
+    check = widgets.Button(description="Überprüfen")
     check.on_click(check_selection)
     
     
@@ -127,7 +127,7 @@ def create_int_input_widget(descriptionText, descriptionCode, correct_answer, la
     
     
     
-    check = widgets.Button(description="Ã¼berprÃ¼fen")
+    check = widgets.Button(description="Überprüfen")
     
     
     feedback_out = widgets.Output()
@@ -186,7 +186,7 @@ def create_int_input_widget_feedback(descriptionText, descriptionCode, correct_a
             print(s)
         return
     
-    check = widgets.Button(description="Ã¼berprÃ¼fen")
+    check = widgets.Button(description="Überprüfen")
     check.on_click(check_selection)
     
     
