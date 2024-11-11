@@ -107,6 +107,45 @@ def create_multipleChoice_widget_new(descriptionText, descriptionCode, options, 
 
 
 
+def create_float_input_widget(descriptionText, descriptionCode, correct_answer, last=0):
+
+    
+    description_out = widgets.Output()
+    with description_out:
+        if len(descriptionText)>0:
+                m=Markdown(descriptionText)
+                display(m)
+        if len(descriptionCode)>0:
+                #c=Code(descriptionCode,language='python')
+                c=Markdown("```python\n"+descriptionCode+"\n```")
+                display(c)
+        
+    eingabe = widgets.FloatText(
+        description='Wert:',
+        disabled=False
+    )
+    
+    
+    
+    check = widgets.Button(description="Überprüfen")
+    
+    
+    feedback_out = widgets.Output()
+
+    def check_selection(b):
+        given_answer = eingabe.value
+        with feedback_out:
+            clear_output()
+            if given_answer==correct_answer:
+                print('\x1b[6;30;42m' + "Richtig!" + '\x1b[0m' +"\n") #green color
+            elif given_answer!=correct_answer:
+                print('\x1b[5;30;41m' + "Falsch!" + '\x1b[0m' +"\n") #red color
+        return
+
+    check.on_click(check_selection)
+    
+    return widgets.VBox([description_out, eingabe, check, feedback_out])
+
 def create_int_input_widget(descriptionText, descriptionCode, correct_answer, last=0):
 
     
