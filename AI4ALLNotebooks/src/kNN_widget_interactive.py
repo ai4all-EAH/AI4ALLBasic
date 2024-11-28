@@ -136,7 +136,7 @@ class kNNVisualizer:
         
         # Customize plot
         ax.legend(title='')
-        ax.set_title(f'Vorhersage fÃ¼r den Testpunkt: {label}')
+        ax.set_title(f'Vorhersage fuer den Testpunkt: {label}')
         ax.set_axisbelow(True)
         plt.grid(True, zorder=-1.0)
         plt.show()
@@ -197,7 +197,7 @@ class kNNVisualizer:
                 min=1,
                 max=260,
                 value=self.k,
-                description='ð:',
+                description='𝑘:',
                 style=style
             ),
             widgets.ToggleButtons(
@@ -234,7 +234,7 @@ class kNNVisualizer:
         tab = widgets.Tab()
         tab.children = [feature_select, knn_params, test_point]
         tab.set_title(0, 'Merkmale')
-        tab.set_title(1, 'ðNN Parameter')
+        tab.set_title(1, '𝑘NN Parameter')
         tab.set_title(2, 'Testpunkt')
         
         # Display widget
@@ -311,6 +311,6 @@ class kNNVisualizer:
         update(None)
 
 
-"""Initialize and display the KNN visualization widget."""
+"""Initialize and display the kNN visualization widget."""
 visualizer = kNNVisualizer()
 visualizer.create_widget()
