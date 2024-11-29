@@ -121,7 +121,7 @@ class kNNVisualizer:
         self._plot_distance_lines(df_nn, test_pt, k, p)
         
         ax.legend(title='')
-        ax.set_title(f'Vorhersage für den Testpunkt: {label}')
+        ax.set_title(f'Vorhersage fuer den Testpunkt: {label}')
         ax.set_axisbelow(True)
         plt.grid(True, zorder=-1.0)
         plt.show()
