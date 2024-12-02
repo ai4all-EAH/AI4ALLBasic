@@ -16,12 +16,21 @@ class ColorScheme:
     CHINSTRAP: str = '#0F204B'
     TEST: str = '#E98300'
 
+@dataclass
+class MarkerScheme:
+    """Color scheme constants for the visualization."""
+    ADELIE: str = 'o'
+    GENTOO: str = '*'
+    CHINSTRAP: str = 'D'
+    TEST: str = 's'
+
 class kNNVisualizer:
     def __init__(self):
         self.df = pd.read_csv('./data/penguins.csv')
         self.numeric_columns = self.df.select_dtypes(include=[np.number]).columns.tolist()
         self.class_column = 'Pinguinart'
         self.colors = ColorScheme()
+        self.markers = MarkerScheme()
         
         self.feature1 = 'Schnabellaenge'
         self.feature2 = 'Schnabelhoehe'
@@ -80,6 +89,13 @@ class kNNVisualizer:
                 k: int, 
                 p: int, 
                 label: str) -> None:
+        
+        marker_styles = {
+            'Adelie': self.markers.ADELIE,
+            'Gentoo': self.markers.GENTOO,
+            'Chinstrap': self.markers.CHINSTRAP
+        }
+        
         plt.figure(figsize=(10, 6))
         
         ax = sns.scatterplot(
@@ -87,6 +103,8 @@ class kNNVisualizer:
             x=self.feature1,
             y=self.feature2,
             hue=self.class_column,
+            style=self.class_column,
+            markers=marker_styles,
             palette={
                 'Adelie': self.colors.ADELIE,
                 'Gentoo': self.colors.GENTOO,
@@ -98,7 +116,7 @@ class kNNVisualizer:
         plt.plot(
             test_pt[self.feature1],
             test_pt[self.feature2],
-            's',
+            marker=self.markers.TEST,
             color=self.colors.TEST,
             label='Testpunkt',
             markersize=10
@@ -109,6 +127,8 @@ class kNNVisualizer:
             x=self.feature1,
             y=self.feature2,
             hue=self.class_column,
+            style=self.class_column,
+            markers=marker_styles,
             palette={
                 'Adelie': self.colors.ADELIE,
                 'Gentoo': self.colors.GENTOO,
