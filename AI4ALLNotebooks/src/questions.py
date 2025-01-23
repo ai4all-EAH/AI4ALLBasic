@@ -106,7 +106,6 @@ def create_multipleChoice_widget_new(descriptionText, descriptionCode, options, 
     return widgets.VBox([description_out, alternativ, check, feedback_out])
 
 
-
 def create_float_input_widget(descriptionText, descriptionCode, correct_answer, last=0):
 
     
@@ -190,7 +189,7 @@ def create_int_input_widget(descriptionText, descriptionCode, correct_answer, la
 
 # allows for specific feedback in case of a wrong value
 # feedback_dic is a dictionary,
-# teh wrong answer is the key, the feedback (of type string) the value 
+# the wrong answer is the key, the feedback (of type string) the value 
 def create_int_input_widget_feedback(descriptionText, descriptionCode, correct_answer, feedback_dic, last=0):
 
     
