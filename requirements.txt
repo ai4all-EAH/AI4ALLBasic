@@ -1,5 +1,3 @@
-conda list
-
 # packages in environment at /opt/tljh/user:
 #
 # Name                    Version                   Build  Channel
