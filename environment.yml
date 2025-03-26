@@ -8,3 +8,5 @@ dependencies:
   - nodejs
   - setuptools
   - wheel
+  - voila
+  - ipympl
