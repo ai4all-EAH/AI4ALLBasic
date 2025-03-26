@@ -10,3 +10,9 @@ dependencies:
   - wheel
   - voila
   - ipympl
+  - numpy
+  - pandas
+  - matplotlib
+  - scipy
+  - sklearn
+  - ipywidgets
