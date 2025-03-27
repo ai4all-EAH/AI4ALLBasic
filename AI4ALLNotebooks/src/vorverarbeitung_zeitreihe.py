@@ -11,7 +11,7 @@ data_acc_orig = pd.read_csv('./data/Accelerometer_orig.csv', sep=',', header=0)#
 data_acc_prepro = pd.read_csv('./data/Accelerometer_missing.csv', sep=',', header=0)#, usecols=[0,1])
 data_acc = data_acc_prepro.iloc[:,1]
 
-# Zeitachse für die gesamte Datenreihe
+# Zeitachse fÃ¼r die gesamte Datenreihe
 time = np.linspace(0, len(data_acc)/50, len(data_acc))
 noise =  np.random.normal(0,0.25,len(data_acc))
 data_acc = data_acc+noise
@@ -33,13 +33,13 @@ imputation_widget = widgets.Dropdown(
     style={'description_width': 'initial'}
 )
 
-outlier_widget = widgets.Dropdown(options=['keine', 'Entfernen', 'Log Transformation'], description='Ausreißer:')
+outlier_widget = widgets.Dropdown(options=['keine', 'Entfernen', 'Log Transformation'], description='AusreiÃer:')
 scaling_widget = widgets.Dropdown(options=['keine', 'Z-Transformation', 'Min-Max-Skalierung'], description='Normalisierung:')
-smoothing_widget = widgets.Dropdown(options=['keine', 'Gleitender Mittelwert 5', 'Gleitender Mittelwert 20','Gaussian'], description='Glättung:')
+smoothing_widget = widgets.Dropdown(options=['keine', 'Gleitender Mittelwert 5', 'Gleitender Mittelwert 20','Gaussian'], description='GlÃ¤ttung:')
 
 def update_plot(imputation, outlier_handling, scaling, smoothing, time_range):
     # Erstelle Figure und Achsen
-    fig, axs = plt.subplots(2, 1, figsize=(10, 6))
+    fig, axs = plt.subplots(2, 1, figsize=(10, 8))
     
     # Bereinige die Achsen, bevor neue Daten gezeichnet werden
     for ax in axs:
@@ -48,82 +48,122 @@ def update_plot(imputation, outlier_handling, scaling, smoothing, time_range):
     data_processed = data_acc.copy()
     original_data = data_processed.copy()
 
-    # Zeitachse für die gesamte Datenreihe
+    if imputation == 'kNN':
+        series_2 = data_acc_prepro.iloc[:, 2].copy()
+        series_3 = data_acc_prepro.iloc[:, 3].copy()
+        orig_series_2 = data_acc_orig.iloc[:, 2].copy()
+        orig_series_3 = data_acc_orig.iloc[:, 3].copy()
+
+    # Zeitachse fÃ¼r die gesamte Datenreihe
     time = np.linspace(0, len(data_acc)/50, len(data_acc))
-    # Umgang mit Ausreißern: Markiere Ausreißer als NaN
+    
+    # Umgang mit AusreiÃern
     if outlier_handling == 'Entfernen':
-        z_scores = np.abs(stats.zscore(data_processed[~data_processed.isnull()]))
-        mask = (z_scores < 3)
-        data_processed[~data_processed.isnull()] = data_processed[~data_processed.isnull()].where(mask, np.nan)
+        for data in [data_processed, series_2, series_3] if imputation == 'kNN' else [data_processed]:
+            z_scores = np.abs(stats.zscore(data[~data.isnull()]))
+            mask = (z_scores < 3)
+            data[~data.isnull()] = data[~data.isnull()].where(mask, np.nan)
     elif outlier_handling == 'Log Transformation':
-        data_processed = np.log(data_processed - data_processed.min() + 1)
-        
+        for data in [data_processed, series_2, series_3] if imputation == 'kNN' else [data_processed]:
+            data[:] = np.log(data - data.min() + 1)  # Stellen Sie sicher, dass die Operationen auf dem ursprÃ¼nglichen DataFrame durchgefÃ¼hrt werden
     missing_idx = pd.isnull(data_processed)
     
     # Imputation
     if imputation != 'keine':
         if imputation == 'Mittelwert':
             imputer = SimpleImputer(strategy='mean')
+            for i, data in enumerate([data_processed, series_2, series_3] if imputation == 'kNN' else [data_processed]):
+                data[:] = pd.Series(imputer.fit_transform(data.values.reshape(-1, 1)).ravel())
         elif imputation == 'Median':
             imputer = SimpleImputer(strategy='median')
+            for i, data in enumerate([data_processed, series_2, series_3] if imputation == 'kNN' else [data_processed]):
+                data[:] = pd.Series(imputer.fit_transform(data.values.reshape(-1, 1)).ravel())
         elif imputation == 'kNN':
-            all_data_processed = data_acc_prepro.iloc[:,1:4].copy()
-            all_data_processed.iloc[:,1] = data_processed
-            values = all_data_processed.iloc[:,1:4].values
+            all_data = data_acc_prepro.iloc[:, 1:4].copy()
+            all_data.iloc[:, 0] = data_processed
+            values = all_data.values
             est = KNNImputer(n_neighbors=3).fit(values)
-            data_processed = pd.Series(est.transform(values)[:,0])
-        if imputation in ['Mittelwert', 'Median']:
-            data_processed = pd.Series(imputer.fit_transform(data_processed.values.reshape(-1, 1)).ravel())
+            all_data = pd.DataFrame(est.transform(values), columns=all_data.columns)
+            data_processed = pd.Series(all_data.iloc[:, 0])
+            series_2 = pd.Series(all_data.iloc[:, 1])
+            series_3 = pd.Series(all_data.iloc[:, 2])
         elif imputation == 'Lineare Interpolation':
-            data_processed.interpolate(method='linear', inplace=True)
+            for data in [data_processed, series_2, series_3] if imputation == 'kNN' else [data_processed]:
+                data.interpolate(method='linear', inplace=True)
         elif imputation == 'LOCF':
-            data_processed.ffill(inplace=True)
+            for data in [data_processed, series_2, series_3] if imputation == 'kNN' else [data_processed]:
+                data.ffill(inplace=True)
         elif imputation == 'NOCF':
-            data_processed.bfill(inplace=True)
+            for data in [data_processed, series_2, series_3] if imputation == 'kNN' else [data_processed]:
+                data.bfill(inplace=True)
     
     # Skalierung trotz NaNs
     if scaling != 'keine':
-        not_nan_mask = ~data_processed.isnull()
-        if scaling == 'Z-Transformation':
-            scaler = StandardScaler()
-        elif scaling == 'Min-Max-Skalierung':
-            scaler = MinMaxScaler()
-        scaled_values = scaler.fit_transform(data_processed[not_nan_mask].values.reshape(-1, 1)).ravel()
-        data_processed.loc[not_nan_mask] = scaled_values
+        for data in [data_processed, series_2, series_3] if imputation == 'kNN' else [data_processed]:
+            not_nan_mask = ~data.isnull()
+            if scaling == 'Z-Transformation':
+                scaler = StandardScaler()
+            elif scaling == 'Min-Max-Skalierung':
+                scaler = MinMaxScaler()
+            scaled_values = scaler.fit_transform(data[not_nan_mask].values.reshape(-1, 1)).ravel()
+            data.loc[not_nan_mask] = scaled_values
     
-    # Überprüfe, ob NaNs vorhanden sind, und aktualisiere die Glättungsoptionen
+    # ÃberprÃ¼fe, ob NaNs vorhanden sind, und aktualisiere die GlÃ¤ttungsoptionen
     if data_processed.isnull().any():
         smoothing_widget.value = 'keine'
         smoothing_widget.disabled = True
     else:
         smoothing_widget.disabled = False
     
-    # Glättung nur, wenn keine NaNs vorhanden sind und Glättung nicht auf "None" gesetzt ist
+    # GlÃ¤ttung nur, wenn keine NaNs vorhanden sind und GlÃ¤ttung nicht auf "None" gesetzt ist
     if smoothing != 'keine' and not data_processed.isnull().any():
         if smoothing == 'Gleitender Mittelwert 5':
-            data_processed = pd.Series(np.convolve(data_processed, np.ones(5)/5, mode='same'))
+            for data in [data_processed, series_2, series_3] if imputation == 'kNN' else [data_processed]:
+                data[:] = pd.Series(np.convolve(data, np.ones(5)/5, mode='same'))
         elif smoothing == 'Gleitender Mittelwert 20':
-            data_processed = pd.Series(np.convolve(data_processed, np.ones(20)/20, mode='same'))
+            for data in [data_processed, series_2, series_3] if imputation == 'kNN' else [data_processed]:
+                data[:] = pd.Series(np.convolve(data, np.ones(20)/20, mode='same'))
         elif smoothing == 'Gaussian':
-            data_processed = pd.Series(ndimage.gaussian_filter(data_processed, sigma=2))
+            for data in [data_processed, series_2, series_3] if imputation == 'kNN' else [data_processed]:
+                data[:] = pd.Series(ndimage.gaussian_filter(data, sigma=2))
     
-    # Zeitbereich basierend auf dem Slider auswählen
+    # Zeitbereich basierend auf dem Slider auswÃ¤hlen
     start_idx, end_idx = time_range
     selected_time = time[start_idx:end_idx+1]
     data_processed = data_processed[start_idx:end_idx+1]
     original_data = original_data[start_idx:end_idx+1]
-       
-    axs[0].plot(selected_time, original_data, label='Original')
+    
+    if imputation == 'kNN':
+        series_2 = series_2[start_idx:end_idx+1]
+        series_3 = series_3[start_idx:end_idx+1]
+    
+    axs[0].set_title('Originale Zeitreihe')
+    axs[1].set_title('Vorverarbeitete Zeitreihe')
+
+    # Zeige die Originaldaten in axs[0]
+    axs[0].plot(selected_time, original_data, label='x-Sensor')
+    if imputation == 'kNN':
+        axs[0].plot(selected_time, orig_series_2, label='y-Sensor')
+        axs[0].plot(selected_time, orig_series_3, label='z-Sensor')
     axs[0].legend()
-    
-    axs[1].plot(selected_time, data_processed, label='Processed')
+
+    # Zeige die verarbeiteten Daten in axs[1]
+    axs[1].plot(selected_time, data_processed, label='x-Sensor')
+    if imputation == 'kNN':
+        axs[1].plot(selected_time, series_2, label='y-Sensor')
+        axs[1].plot(selected_time, series_3, label='z-Sensor')
     axs[1].legend()
-    
+
+    axs[1].set_xlabel('Zeit in s')
+    axs[1].set_ylabel('Beschleunigung in g')
+
     for idx in data_processed[missing_idx].index:
         if idx >= start_idx and idx <= end_idx:  # Verhindere Indexfehler
             axs[1].plot(selected_time[idx-start_idx:idx+2-start_idx], data_processed[idx-start_idx:idx+2-start_idx], 'r-', linewidth=2, label='Processed')           
-    plt.show()
 
+
+    plt.show()
+    
 ui = widgets.VBox([
     imputation_widget,
     outlier_widget,
