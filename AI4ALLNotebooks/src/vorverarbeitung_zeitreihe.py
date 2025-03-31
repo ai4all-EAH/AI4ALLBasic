@@ -11,7 +11,7 @@ data_acc_orig = pd.read_csv('./data/Accelerometer_orig.csv', sep=',', header=0)#
 data_acc_prepro = pd.read_csv('./data/Accelerometer_missing.csv', sep=',', header=0)#, usecols=[0,1])
 data_acc = data_acc_prepro.iloc[:,1]
 
-# Zeitachse fÃ¼r die gesamte Datenreihe
+# Zeitachse für die gesamte Datenreihe
 time = np.linspace(0, len(data_acc)/50, len(data_acc))
 noise =  np.random.normal(0,0.25,len(data_acc))
 data_acc = data_acc+noise
@@ -33,9 +33,9 @@ imputation_widget = widgets.Dropdown(
     style={'description_width': 'initial'}
 )
 
-outlier_widget = widgets.Dropdown(options=['keine', 'Entfernen', 'Log Transformation'], description='AusreiÃer:')
+outlier_widget = widgets.Dropdown(options=['keine', 'Entfernen', 'Log Transformation'], description='Ausreißer:')
 scaling_widget = widgets.Dropdown(options=['keine', 'Z-Transformation', 'Min-Max-Skalierung'], description='Normalisierung:')
-smoothing_widget = widgets.Dropdown(options=['keine', 'Gleitender Mittelwert 5', 'Gleitender Mittelwert 20','Gaussian'], description='GlÃ¤ttung:')
+smoothing_widget = widgets.Dropdown(options=['keine', 'Gleitender Mittelwert 5', 'Gleitender Mittelwert 20','Gaussian'], description='Glättung:')
 
 def update_plot(imputation, outlier_handling, scaling, smoothing, time_range):
     # Erstelle Figure und Achsen
@@ -54,10 +54,10 @@ def update_plot(imputation, outlier_handling, scaling, smoothing, time_range):
         orig_series_2 = data_acc_orig.iloc[:, 2].copy()
         orig_series_3 = data_acc_orig.iloc[:, 3].copy()
 
-    # Zeitachse fÃ¼r die gesamte Datenreihe
+    # Zeitachse für die gesamte Datenreihe
     time = np.linspace(0, len(data_acc)/50, len(data_acc))
     
-    # Umgang mit AusreiÃern
+    # Umgang mit Ausreißern
     if outlier_handling == 'Entfernen':
         for data in [data_processed, series_2, series_3] if imputation == 'kNN' else [data_processed]:
             z_scores = np.abs(stats.zscore(data[~data.isnull()]))
@@ -65,7 +65,7 @@ def update_plot(imputation, outlier_handling, scaling, smoothing, time_range):
             data[~data.isnull()] = data[~data.isnull()].where(mask, np.nan)
     elif outlier_handling == 'Log Transformation':
         for data in [data_processed, series_2, series_3] if imputation == 'kNN' else [data_processed]:
-            data[:] = np.log(data - data.min() + 1)  # Stellen Sie sicher, dass die Operationen auf dem ursprÃ¼nglichen DataFrame durchgefÃ¼hrt werden
+            data[:] = np.log(data - data.min() + 1)  # Stellen Sie sicher, dass die Operationen auf dem ursprünglichen DataFrame durchgeführt werden
     missing_idx = pd.isnull(data_processed)
     
     # Imputation
@@ -108,14 +108,14 @@ def update_plot(imputation, outlier_handling, scaling, smoothing, time_range):
             scaled_values = scaler.fit_transform(data[not_nan_mask].values.reshape(-1, 1)).ravel()
             data.loc[not_nan_mask] = scaled_values
     
-    # ÃberprÃ¼fe, ob NaNs vorhanden sind, und aktualisiere die GlÃ¤ttungsoptionen
+    # Überprüfe, ob NaNs vorhanden sind, und aktualisiere die Glättungsoptionen
     if data_processed.isnull().any():
         smoothing_widget.value = 'keine'
         smoothing_widget.disabled = True
     else:
         smoothing_widget.disabled = False
     
-    # GlÃ¤ttung nur, wenn keine NaNs vorhanden sind und GlÃ¤ttung nicht auf "None" gesetzt ist
+    # Glättung nur, wenn keine NaNs vorhanden sind und Glättung nicht auf "None" gesetzt ist
     if smoothing != 'keine' and not data_processed.isnull().any():
         if smoothing == 'Gleitender Mittelwert 5':
             for data in [data_processed, series_2, series_3] if imputation == 'kNN' else [data_processed]:
@@ -127,7 +127,7 @@ def update_plot(imputation, outlier_handling, scaling, smoothing, time_range):
             for data in [data_processed, series_2, series_3] if imputation == 'kNN' else [data_processed]:
                 data[:] = pd.Series(ndimage.gaussian_filter(data, sigma=2))
     
-    # Zeitbereich basierend auf dem Slider auswÃ¤hlen
+    # Zeitbereich basierend auf dem Slider auswählen
     start_idx, end_idx = time_range
     selected_time = time[start_idx:end_idx+1]
     data_processed = data_processed[start_idx:end_idx+1]
@@ -136,6 +136,8 @@ def update_plot(imputation, outlier_handling, scaling, smoothing, time_range):
     if imputation == 'kNN':
         series_2 = series_2[start_idx:end_idx+1]
         series_3 = series_3[start_idx:end_idx+1]
+        orig_series_2 = orig_series_2[start_idx:end_idx+1] 
+        orig_series_3 = orig_series_3[start_idx:end_idx+1]
     
     axs[0].set_title('Originale Zeitreihe')
     axs[1].set_title('Vorverarbeitete Zeitreihe')
@@ -159,7 +161,7 @@ def update_plot(imputation, outlier_handling, scaling, smoothing, time_range):
 
     for idx in data_processed[missing_idx].index:
         if idx >= start_idx and idx <= end_idx:  # Verhindere Indexfehler
-            axs[1].plot(selected_time[idx-start_idx:idx+2-start_idx], data_processed[idx-start_idx:idx+2-start_idx], 'r-', linewidth=2, label='Processed')           
+            axs[1].plot(selected_time[idx-start_idx:idx+2-start_idx], data_processed[idx-start_idx:idx+2-start_idx], 'r-', linewidth=2, label='Processed') 
 
 
     plt.show()
